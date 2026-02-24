@@ -45,7 +45,7 @@ public class FactureDAO {
 
         for(Facture f : factures) {
             System.out.println("Facture id: " + f.getIdFacture());
-            System.out.println("Amount operation: " + Facture.getMontantTotal());
+            System.out.println("Amount operation: " + f.getMontantTotal());
             System.out.println("Creation date: " + String.valueOf(f.getDateCreation()));
             System.out.println("Invoice date: " + String.valueOf(f.getDateFacture()));
             System.out.println("Status Payment: " + String.valueOf(f.getStatut()));
@@ -106,7 +106,7 @@ public class FactureDAO {
 
         for(Facture f : factures) {
             System.out.println("facture id: " + f.getIdFacture());
-            System.out.println("montant total: " + Facture.getMontantTotal());
+            System.out.println("montant total: " + f.getMontantTotal());
             System.out.println("facture status: " + String.valueOf(f.getStatut()));
             System.out.println("Date creation: " + String.valueOf(f.getDateCreation()));
             System.out.println("-----------------------------------------");
