@@ -1,9 +1,5 @@
 package com.finpay3;
 
-//
-// Source code recreated from a .class file by IntelliJ IDEA
-// (powered by FernFlower decompiler)
-//
 
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Font;
@@ -40,7 +36,7 @@ public class PaymentDAO {
                     if (resultSet.next()) {
                         int idPayment = resultSet.getInt(1);
                         Facture facture = FactureDAO.findFactureById(idFacture);
-                        double resteAPayer = Facture.getMontantTotal() - montantPaye;
+                        double resteAPayer = facture.getMontantTotal() - montantPaye;
                         Date datePaiement = facture.getDateFacture();
                         System.out.println("Payment added successfully!");
                         GenerationDunRecuDePaiement(idPayment, idFacture, datePaiement, montantPaye, resteAPayer);

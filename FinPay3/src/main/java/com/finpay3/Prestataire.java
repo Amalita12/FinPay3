@@ -1,9 +1,5 @@
 package com.finpay3;
 
-//
-// Source code recreated from a .class file by IntelliJ IDEA
-// (powered by FernFlower decompiler)
-//
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +41,14 @@ public class Prestataire {
 
     public String toString() {
         return "Prestataire{id=" + this.id + ", name='" + this.name + "'}";
+    }
+
+    public double calculerTotalFacture(){
+        double total = 0;
+        for (Facture f : factures){
+            total += f.getMontantTotal();
+        }
+        return total;
     }
 }
 
