@@ -1,5 +1,11 @@
 package com.finpay3;
 
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+
+import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +51,7 @@ public class FactureDAO {
 
         for(Facture f : factures) {
             System.out.println("Facture id: " + f.getIdFacture());
-            System.out.println("Amount operation: " + Facture.getMontantTotal());
+            System.out.println("Amount operation: " + f.getMontantTotal());
             System.out.println("Creation date: " + String.valueOf(f.getDateCreation()));
             System.out.println("Invoice date: " + String.valueOf(f.getDateFacture()));
             System.out.println("Status Payment: " + String.valueOf(f.getStatut()));
@@ -106,7 +112,7 @@ public class FactureDAO {
 
         for(Facture f : factures) {
             System.out.println("facture id: " + f.getIdFacture());
-            System.out.println("montant total: " + Facture.getMontantTotal());
+            System.out.println("montant total: " + f.getMontantTotal());
             System.out.println("facture status: " + String.valueOf(f.getStatut()));
             System.out.println("Date creation: " + String.valueOf(f.getDateCreation()));
             System.out.println("-----------------------------------------");
@@ -188,4 +194,54 @@ public class FactureDAO {
             return (double)0.0F;
         }
     }
+    public static void facturePDF(int id){
+        Facture facture = FactureDAO.findFactureById(id);
+        System.out.println(facture);
+        try (PDDocument document = new PDDocument()) {
+
+            PDPage page = new PDPage();
+            document.addPage(page);
+            PDPageContentStream contentStream = new PDPageContentStream(document, page);
+
+            float margin = 50;
+            float y = 700;
+            float leading = 20f;
+
+            contentStream.beginText();
+            contentStream.setFont(PDType1Font.HELVETICA_BOLD, 22);
+            contentStream.newLineAtOffset(margin, y);
+            contentStream.showText("----FinPay APP----");
+
+            contentStream.setFont(PDType1Font.HELVETICA, 12);
+            contentStream.setLeading(leading);
+
+            contentStream.newLine();
+            contentStream.showText("Facture ID : " + facture.getIdFacture());
+            contentStream.newLine();
+            contentStream.showText("Date : " + facture.getDateFacture());
+            contentStream.newLine();
+            contentStream.showText("Client : " + facture.getClient().getNom() + " (ID: " + facture.getClient().getIdClient() + ")");
+            contentStream.newLine();
+            contentStream.showText("Prestataire : " + facture.getPrestataire().getName() + " (ID: " + facture.getPrestataire().getId() + ")");
+            contentStream.newLine();
+            contentStream.showText("Montant total : " + facture.getMontantTotal());
+            contentStream.newLine();
+            contentStream.showText("Commission : " + (facture.getMontantTotal() * 0.02));
+            contentStream.newLine();
+            contentStream.showText("Status : " + facture.getStatut());
+            contentStream.newLine();
+            contentStream.showText("Merci de votre confiance !");
+            contentStream.endText();
+
+            contentStream.close();
+            document.save("Facture_" + facture.getIdFacture() + ".pdf");
+            document.close();
+
+            System.out.println("PDF créé avec succès !");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
 }

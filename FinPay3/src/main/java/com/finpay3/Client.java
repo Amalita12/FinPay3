@@ -1,10 +1,5 @@
 package com.finpay3;
 
-//
-// Source code recreated from a .class file by IntelliJ IDEA
-// (powered by FernFlower decompiler)
-//
-
 public class Client {
     private int idClient;
     private String nom;

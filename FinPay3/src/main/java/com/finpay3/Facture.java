@@ -9,7 +9,7 @@ public class Facture {
     private int idFacture;
     private Client client;
     private Prestataire prestataire;
-    private static double montantTotal;
+    private  double montantTotal;
     private Statut statut;
     private Date dateFacture;
     private Timestamp dateCreation;
@@ -20,6 +20,7 @@ public class Facture {
         this.prestataire = prestataire;
         this.montantTotal = montantTotal;
         this.statut = Statut.PENDING;
+        this.statut = statut;
         this.dateFacture = dateFacture;
         this.dateCreation = dateCreation;
     }
@@ -52,13 +53,14 @@ public class Facture {
         this.prestataire = prestataire;
     }
 
-    public static double getMontantTotal() {
+    public  double getMontantTotal() {
         return montantTotal;
     }
 
     public void setMontantTotal(double montantTotal) {
         this.montantTotal = montantTotal;
     }
+
 
     public Statut getStatut() {
         return statut;

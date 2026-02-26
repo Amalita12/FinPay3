@@ -11,6 +11,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.poi.ss.usermodel.Row;
@@ -143,7 +144,9 @@ public class PrestataireDAO {
     }
 
     public static void genererExcelPrestataire(int id) {
-        String fileName = "facturesprestatairemois.xlsx";
+        String moisActuel = LocalDate.now().getMonth().toString();
+        String fileName = "factures_p" + id + "_" + moisActuel + ".xlsx";
+
         String sql = "SELECT f.id_facture, f.date_facture, c.nom AS client_nom, f.montant_total, f.statut FROM factures f JOIN clients c ON f.id_client = c.id_client WHERE f.id_prestataire = ?";
 
         try (
@@ -156,18 +159,18 @@ public class PrestataireDAO {
             String[] headers = new String[]{"ID", "Date", "Client", "Montant", "Statut"};
             Row headerRow = sheet.createRow(0);
 
-            for(int i = 0; i < headers.length; ++i) {
+            for(int i = 0; i < headers.length; i++) {
                 headerRow.createCell(i).setCellValue(headers[i]);
             }
 
             int rowIdx = 1;
-            double totalFacture = (double)0.0F;
-            double totalPaye = (double)0.0F;
-            double totalEnAttente = (double)0.0F;
+            double totalFacture = 0;
+            double totalPaye = 0;
+            double totalEnAttente = 0;
 
             while(rs.next()) {
                 Row row = sheet.createRow(rowIdx++);
-                row.createCell(0).setCellValue((double)rs.getInt("id_facture"));
+                row.createCell(0).setCellValue(rs.getInt("id_facture"));
                 row.createCell(1).setCellValue(rs.getDate("date_facture").toString());
                 row.createCell(2).setCellValue(rs.getString("client_nom"));
                 double montant = rs.getDouble("montant_total");
@@ -201,7 +204,7 @@ public class PrestataireDAO {
         } catch (IOException | SQLException e) {
             ((Exception)e).printStackTrace();
         }
-
     }
+
 }
 
