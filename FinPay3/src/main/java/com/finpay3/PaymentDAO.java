@@ -49,10 +49,10 @@ public class PaymentDAO {
 
     }
 
-    private static void GenerationDunRecuDePaiement(int idPayment, int idFacture, Date date, double montantPaye, double resteAPayer) {
+    static void GenerationDunRecuDePaiement(int idPayment, int idFacture, Date date, double montantPaye, double resteAPayer) {
         try {
             Document document = new Document(PageSize.A4);
-            PdfWriter.getInstance(document, new FileOutputStream("recupaiementID_" + idPayment + ".pdf"));
+            PdfWriter.getInstance(document, new FileOutputStream("recu_" + idPayment + ".pdf"));
             document.open();
             Font titleFont = new Font(FontFamily.HELVETICA, 18.0F, 1);
             Paragraph title = new Paragraph("Reçu de Paiement", titleFont);
