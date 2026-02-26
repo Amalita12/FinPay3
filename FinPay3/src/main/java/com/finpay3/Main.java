@@ -22,13 +22,14 @@ public class Main {
             principalMenu();
             int choice = sc.nextInt();
             sc.nextLine();
+            String currentMonth = "";
             switch (choice) {
                 case 1 -> gestionClients();
                 case 2 -> gestionFactures();
                 case 3 -> gestionPaiements();
                 case 4 -> gestionPrestataires();
                 case 5 -> Historique();
-                case 6 -> rapportMois();
+                case 6 -> rapportMois(currentMonth);
                 default -> System.out.println("Invalid choice!");
             }
 
@@ -90,7 +91,7 @@ public class Main {
             case 3 -> updateFacture();
             case 4 -> deleteFacture();
             case 5 -> searchFacturesByStatut();
-            case 6 -> facturePDF();
+            case 6 -> facturePdf();
         }
 
     }
@@ -264,114 +265,76 @@ public class Main {
     static {
         sc = new Scanner(System.in);
     }
-    public static void facturePDF(){
-        System.out.println("Entre ID facture : ");
+    public static void facturePdf(){
+        System.out.println("Enter ID Facture: ");
         int id = sc.nextInt();
-        Facture facture = FactureDAO.findFactureById(id);
-        System.out.println(facture);
-        try (PDDocument document = new PDDocument()) {
-
-            PDPage page = new PDPage();
-            document.addPage(page);
-            PDPageContentStream contentStream = new PDPageContentStream(document, page);
-
-            float margin = 50;
-            float y = 700;
-            float leading = 20f;
-
-            contentStream.beginText();
-            contentStream.setFont(PDType1Font.HELVETICA_BOLD, 22);
-            contentStream.newLineAtOffset(margin, y);
-            contentStream.showText("----FinPay APP----");
-
-            contentStream.setFont(PDType1Font.HELVETICA, 12);
-            contentStream.setLeading(leading);
-
-            contentStream.newLine();
-            contentStream.showText("Facture ID : " + facture.getIdFacture());
-            contentStream.newLine();
-            contentStream.showText("Date : " + facture.getDateFacture());
-            contentStream.newLine();
-            contentStream.showText("Client : " + facture.getClient().getNom() + " (ID: " + facture.getClient().getIdClient() + ")");
-            contentStream.newLine();
-            contentStream.showText("Prestataire : " + facture.getPrestataire().getName() + " (ID: " + facture.getPrestataire().getId() + ")");
-            contentStream.newLine();
-            contentStream.showText("Montant total : " + facture.getMontantTotal());
-            contentStream.newLine();
-            contentStream.showText("Commission : " + (facture.getMontantTotal() * 0.02));
-            contentStream.newLine();
-            contentStream.showText("Status : " + facture.getStatut());
-            contentStream.newLine();
-            contentStream.showText("Merci de votre confiance !");
-            contentStream.endText();
-
-            contentStream.close();
-            document.save("Facture" + facture.getIdFacture() + ".pdf");
-            document.close();
-
-            System.out.println("PDF créé avec succès !");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        FactureDAO.facturePDF(id);
     }
-    public static void rapportMois () throws Exception{
-        String sql = "SELECT DATE_FORMAT(factures.date_facture, '%Y-%m') AS mois,\n" +
-                "    prestataires.nom AS Prestataire,\n" +
-                "    COUNT(factures.id_facture) AS Nombre_Factures,\n" +
-                "    SUM(factures.montant_total) AS Total_Généré,\n" +
-                "\tSUM(factures.montant_total)*0.02 AS Total_Commissions\n" +
-                "FROM prestataires\n" +
-                "JOIN factures \n" +
-                "    ON factures.id_prestataire = prestataires.id_prestataire\n" +
-                "GROUP BY \n" +
-                "    DATE_FORMAT(factures.date_facture, '%Y-%m'),\n" +
-                "    prestataires.nom,\n" +
-                "    prestataires.id_prestataire\n" +
-                "ORDER BY mois;\n";
 
-        Connection con = DataBaseConnection.getConnection();
-        PreparedStatement ps = con.prepareStatement(sql);
-        ResultSet resultSet = ps.executeQuery();
-        ResultSetMetaData metaData = resultSet.getMetaData();
-        int columnCount = metaData.getColumnCount();
-        Workbook workbook = null;
-        Sheet sheet = null;
-        String currentMonth = "";
-        int rowNomber = 0;
+    public static void rapportMois(String currentMonth) {
+        String sql = "SELECT DATE_FORMAT(f.date_facture, '%Y-%m') AS mois, " +
+                "p.nom AS Prestataire, " +
+                "COUNT(f.id_facture) AS Nombre_Factures, " +
+                "SUM(f.montant_total) AS Total_Généré, " +
+                "SUM(f.montant_total) * 0.02 AS Total_Commissions " +
+                "FROM prestataires p " +
+                "JOIN factures f ON f.id_prestataire = p.id_prestataire " +
+                "GROUP BY DATE_FORMAT(f.date_facture, '%Y-%m'), p.nom, p.id_prestataire " +
+                "ORDER BY mois;";
 
-        while (resultSet.next()){
-            String month = resultSet.getString("mois");
+        try (Connection conn = DataBaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
 
-            if(!month.equals(currentMonth)){
-                if(workbook != null){
-                    String oldFilePath ="C:\\Users\\enaa\\Desktop\\FinPay3\\rapport_"+currentMonth+".xlsx";
-                    try(FileOutputStream fileOut = new FileOutputStream(oldFilePath)) {
-                        workbook.write(fileOut);
+
+            Workbook workbook = null;
+            Sheet sheet = null;
+            int rowNumber = 0;
+
+            while (rs.next()) {
+                String mois = rs.getString("mois");
+
+                if (!mois.equals(currentMonth)) {
+
+                    if (workbook != null) {
+                        String oldFileName = "rapport_" + currentMonth + ".xlsx";
+                        try (FileOutputStream fileOut = new FileOutputStream(oldFileName)) {
+                            workbook.write(fileOut);
+                        }
+                        workbook.close();
                     }
-                    workbook.close();
-                }
-                currentMonth = month;
-                workbook = new XSSFWorkbook();
-                sheet = workbook.createSheet("Data");
-                rowNomber = 0;
-                int colExcel = 0;
 
-                Row rowHeader = sheet.createRow(rowNomber++);
-                for (int col =2 ; col<= columnCount ; col++ ){
-                    rowHeader.createCell(colExcel++).setCellValue(metaData.getColumnName(col));
+                    currentMonth = mois;
+                    workbook = new XSSFWorkbook();
+                    sheet = workbook.createSheet("Rapport " + mois);
+                    rowNumber = 0;
+
+                    String[] headers = {"Prestataire", "Nombre Factures", "Total Généré", "Total Commissions"};
+                    Row headerRow = sheet.createRow(rowNumber++);
+                    for (int i = 0; i < headers.length; i++) {
+                        headerRow.createCell(i).setCellValue(headers[i]);
+                    }
                 }
+
+                Row row = sheet.createRow(rowNumber++);
+                row.createCell(0).setCellValue(rs.getString("Prestataire"));
+                row.createCell(1).setCellValue(rs.getInt("Nombre_Factures"));
+                row.createCell(2).setCellValue(rs.getDouble("Total_Généré"));
+                row.createCell(3).setCellValue(rs.getDouble("Total_Commissions"));
             }
-            int colExcel = 0;
-            Row row = sheet.createRow(rowNomber++);
-            for (int col = 2; col <= columnCount; col++) {
-                row.createCell(colExcel++).setCellValue(resultSet.getString(col));
+
+            if (workbook != null) {
+                String fileName = "rapport_" + currentMonth + ".xlsx";
+                try (FileOutputStream fileOut = new FileOutputStream(fileName)) {
+                    workbook.write(fileOut);
+                }
+                workbook.close();
             }
-        }
-        if (workbook !=null){
-            String filePath = "C:\\Users\\enaa\\Desktop\\FinPay3\\rapport_"+currentMonth+".xlsx";
-            try(FileOutputStream fileOut = new FileOutputStream(filePath)){
-                workbook.write(fileOut);
-            }workbook.close();
+
+            System.out.println("Rapports générés avec succès.");
+
+        } catch (SQLException | IOException e) {
+            e.printStackTrace();
         }
     }
 }
