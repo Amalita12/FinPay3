@@ -18,10 +18,14 @@ public class Facture {
         this.idFacture = idFacture;
         this.client = client;
         this.prestataire = prestataire;
-        Facture.montantTotal = montantTotal;
-        this.statut = statut;
+        this.montantTotal = montantTotal;
+        this.statut = Statut.PENDING;
         this.dateFacture = dateFacture;
         this.dateCreation = dateCreation;
+    }
+    public Facture(double montantTotal) {
+        this.montantTotal = montantTotal;
+        this.statut = Statut.PENDING;
     }
 
     public int getIdFacture() {
@@ -53,11 +57,11 @@ public class Facture {
     }
 
     public void setMontantTotal(double montantTotal) {
-        Facture.montantTotal = montantTotal;
+        this.montantTotal = montantTotal;
     }
 
     public Statut getStatut() {
-        return this.statut;
+        return statut;
     }
 
     public void setStatut(Statut statut) {
@@ -79,7 +83,13 @@ public class Facture {
     public void setDateCreation(Timestamp dateCreation) {
         this.dateCreation = dateCreation;
     }
-
+    public void updateStatut(double montantPaye) {
+        if (montantPaye >= this.montantTotal) {
+            this.statut = Statut.PAID;
+        } else {
+            this.statut = Statut.PENDING;
+        }
+    }
     public String toString() {
         int var10000 = this.idFacture;
         return "Facture{id=" + var10000 + ", client=" + String.valueOf(this.client) + ", prestataire=" + String.valueOf(this.prestataire) + ", montant=" + montantTotal + ", statut=" + String.valueOf(this.statut) + ", dateFacture=" + String.valueOf(this.dateFacture) + ", dateCreation=" + String.valueOf(this.dateCreation) + "}";

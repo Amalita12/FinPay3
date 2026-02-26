@@ -11,7 +11,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.poi.ss.usermodel.Row;
@@ -144,9 +143,7 @@ public class PrestataireDAO {
     }
 
     public static void genererExcelPrestataire(int id) {
-        String moisActuel = LocalDate.now().getMonth().toString(); // Récupère "FEBRUARY"
-        String fileName = "factures_p" + id + "_" + moisActuel + ".xlsx";
-
+        String fileName = "facturesprestatairemois.xlsx";
         String sql = "SELECT f.id_facture, f.date_facture, c.nom AS client_nom, f.montant_total, f.statut FROM factures f JOIN clients c ON f.id_client = c.id_client WHERE f.id_prestataire = ?";
 
         try (
